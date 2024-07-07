@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+actor User
+participant User_Homepage
+participant AddSubcomponent_Page
+participant DisplaySubcomponent_Page
+participant Backend_Server
+participant Database
+
+User -> User_Homepage: Home Button Click
+User_Homepage -> User: Render Home Page
+
+User -> AddSubcomponent_Page: Add Subcomponent Button Click
+AddSubcomponent_Page -> User: Render AddSubcomponent Page
+
+User -> AddSubcomponent_Page: Enter Details in Form
+AddSubcomponent_Page -> AddSubcomponent_Page: Validate JSON Format
+alt JSON Format Invalid
+    AddSubcomponent_Page -> User: Display Error Message
+else JSON Format Valid
+    AddSubcomponent_Page -> Backend_Server: Send Details
+    Backend_Server -> Database: Add Data
+    Database -> Backend_Server: Data Added Successfully
+    Backend_Server -> AddSubcomponent_Page: Success Response
+    AddSubcomponent_Page -> User: Display Success Message
+end
+
+User -> DisplaySubcomponent_Page: Display Subcomponent Button Click
+DisplaySubcomponent_Page -> User: Render DisplaySubcomponent Page
+
+User -> DisplaySubcomponent_Page: Enter Details in Form
+DisplaySubcomponent_Page -> Backend_Server: Send Details
+Backend_Server -> Database: Check Details
+alt Data Not Found
+    Database -> Backend_Server: Data Not Found
+    Backend_Server -> DisplaySubcomponent_Page: Data Not Found Response
+    DisplaySubcomponent_Page -> User: Display Data Not Found Message
+else Data Found
+    Database -> Backend_Server: Data Found
+    Backend_Server -> DisplaySubcomponent_Page: Table Data Response
+    DisplaySubcomponent_Page -> User: Display Table Data
+end
+@enduml
