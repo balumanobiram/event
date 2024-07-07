@@ -1,8 +1,17 @@
 @startuml
 package "Bank_Application" {
     [Bank Application]
+}
+
+package "Dependency_1" {
     [Dependency1]
+}
+
+package "Dependency_2" {
     [Dependency2]
+}
+
+package "Dependency_3" {
     [Dependency3]
 }
 
