@@ -1,0 +1,30 @@
+@startuml
+package "User Interface" {
+    [User]
+    [User_Homepage]
+    [AddSubcomponent_Page]
+    [DisplaySubcomponent_Page]
+}
+
+package "Backend" {
+    [Backend_Server]
+}
+
+package "Database_db" {
+    [Database]
+}
+
+[User] --> [User_Homepage] : Home Button Click
+[User] --> [AddSubcomponent_Page] : Add Subcomponent Button Click
+[User] --> [DisplaySubcomponent_Page] : Display Subcomponent Button Click
+
+[AddSubcomponent_Page] --> [Backend_Server] : Send Details
+[Backend_Server] --> [Database] : Add Data
+[DisplaySubcomponent_Page] --> [Backend_Server] : Send Details
+[Backend_Server] --> [Database] : Check Details
+
+[Database] -> [Backend_Server] : Data Response
+[Backend_Server] -> [AddSubcomponent_Page] : Response
+[Backend_Server] -> [DisplaySubcomponent_Page] : Table Data Response
+
+@enduml
