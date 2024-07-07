@@ -1,0 +1,25 @@
+@startuml
+package "Bank_Application" {
+    [Bank Application]
+    [Dependency1]
+    [Dependency2]
+    [Dependency3]
+}
+
+package "Stub Generator System" {
+    [Stub Generator]
+    database MySql {
+        
+    }
+}
+
+[Bank Application] --> [Dependency1]
+[Bank Application] --> [Dependency2]
+[Bank Application] --> [Dependency3]
+
+[Bank Application] --> [Stub Generator] : On Dependency Failure
+[Stub Generator] --> [MySql] : Generate Stubs
+[MySql] --> [Stub Generator] : Return Stubs
+[Stub Generator] --> [Bank Application] : Provide Stubs
+
+@enduml
