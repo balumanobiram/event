@@ -10,8 +10,16 @@ package "Backend" {
     [Backend_Server]
 }
 
-package "Database_db" {
-    [Database]
+package "Data Access" {
+    database MySql {
+        folder "generatedstubs" {
+            
+        }
+        folder "stub" {
+           
+        }
+        
+    }
 }
 
 [User] --> [User_Homepage] : Home Button Click
@@ -19,12 +27,12 @@ package "Database_db" {
 [User] --> [DisplaySubcomponent_Page] : Display Subcomponent Button Click
 
 [AddSubcomponent_Page] --> [Backend_Server] : Send Details
-[Backend_Server] --> [Database] : Add Data
+[Backend_Server] --> [MySql] : Add Data
 [DisplaySubcomponent_Page] --> [Backend_Server] : Send Details
-[Backend_Server] --> [Database] : Check Details
+[Backend_Server] --> [MySql] : Check Details
 
-[Database] -> [Backend_Server] : Data Response
-[Backend_Server] -> [AddSubcomponent_Page] : Response
-[Backend_Server] -> [DisplaySubcomponent_Page] : Table Data Response
+[MySql] --> [Backend_Server] : Data Response
+[Backend_Server] --> [AddSubcomponent_Page] : Response
+[Backend_Server] --> [DisplaySubcomponent_Page] : Table Data Response
 
 @enduml
