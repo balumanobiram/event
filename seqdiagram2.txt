@@ -1,0 +1,25 @@
+@startuml
+actor Developer
+actor Tester
+participant Application
+participant Interceptor
+participant ExternalService
+participant StubServer
+
+Developer -> Application: Develop/Update Application
+Tester -> Application: Perform Testing
+Application -> Interceptor: Make API Call
+Interceptor -> ExternalService: Forward API Call
+ExternalService -> Interceptor: Return API Response
+Interceptor -> StubServer: Store Response
+Interceptor -> Application: Return API Response
+
+ExternalService ->x Interceptor: API Call Fails
+Interceptor -> StubServer: Request Stub Data
+StubServer -> Interceptor: Return Stub Data
+Interceptor -> Application: Return Stub Data
+
+Developer -> StubServer: Manually Input Data via Form
+StubServer -> Developer: Confirm Data Storage
+
+@enduml
