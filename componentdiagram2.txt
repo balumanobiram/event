@@ -1,0 +1,36 @@
+@startuml
+package "BZ9" {
+    [Application]
+    [Interceptor]
+}
+
+package "BAO" {
+    [ExternalService]
+}
+
+package "Stub Generator" {
+    [StubServer]
+    [DataInputForm]
+}
+
+package "PostgreSQL Database" {
+    database Postgre {
+        folder "Reference Data" {
+        }
+    }
+}
+
+package "Service Database" {
+    database Database {
+    }
+}
+
+Application -> Interceptor: API Calls
+Interceptor -> ExternalService: Forward API Requests
+ExternalService -> Interceptor: Return API Responses
+Interceptor -> StubServer: Request Stub Data (when ExternalService fails)
+StubServer -> Interceptor: Return Stub Data
+DataInputForm -> StubServer: Input/Store Data
+Postgre --> StubServer: Provide Data
+Database --> ExternalService: Store Data
+@enduml
