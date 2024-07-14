@@ -11,8 +11,9 @@ Tester -> Application: Perform Testing
 Application -> Interceptor: Make API Call
 Interceptor -> ExternalService: Forward API Call
 ExternalService -> Interceptor: Return API Response
-Interceptor -> StubServer: Store Response
 Interceptor -> Application: Return API Response
+Interceptor --> StubServer: Store Response
+
 
 ExternalService ->x Interceptor: API Call Fails
 Interceptor -> StubServer: Request Stub Data
