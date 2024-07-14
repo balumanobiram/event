@@ -1,22 +1,23 @@
-Backend Requirements
-Python:
+Adding a Stub:
 
-Version 3.7 or above
-Python Packages:
+Go to the 'Manage Stubs' section.
+Click 'Add Stub'.
+Fill in the API endpoint and response details.
+Click 'Save'.
+Updating a Stub:
 
-Flask: pip install flask
-Flask-CORS: pip install flask-cors
-psycopg2: pip install psycopg2
-Frontend Requirements
-Node.js:
+Select a stub from the list.
+Edit the details.
+Click 'Update'.
+Deleting a Stub:
 
-Version 14.x or above
-npm:
+Select a stub from the list.
+Click 'Delete'.
+Interceptor File Integration
+Download the Interceptor File:
 
-Version 6.x or above
-React.js:
+Obtain the interceptor file from the application interface or repository.
+Integrate the Interceptor:
 
-React and React-DOM libraries (typically included in the package.json dependencies)
-Database Requirements
-PostgreSQL:
-Version 10.x or above
+Add the interceptor file to your application’s directory.
+Configure your application to use the interceptor for API calls
