@@ -1,0 +1,240 @@
+API Documentation for Stub Generator Application
+Overview
+The Stub Generator API allows developers to intercept API calls, forward them to external services, and store responses for future use. This ensures the application can function even when external services are unavailable by using stored stub data.
+
+Base URL
+The base URL for all endpoints is:
+
+arduino
+Copy code
+http://<your-domain>/api
+Endpoints
+1. Create Todo
+Create a new todo item.
+
+Endpoint: /todos
+Method: POST
+
+Request Body:
+
+json
+Copy code
+{
+    "task": "New Task"
+}
+Response:
+
+json
+Copy code
+{
+    "status": "success",
+    "id": 1,
+    "task": "New Task"
+}
+Example:
+
+bash
+Copy code
+curl -X POST http://<your-domain>/api/todos -H "Content-Type: application/json" -d '{"task": "New Task"}'
+2. Get All Todos
+Retrieve a list of all todos.
+
+Endpoint: /todos
+Method: GET
+
+Response:
+
+json
+Copy code
+[
+    {
+        "id": 1,
+        "task": "New Task"
+    }
+]
+Example:
+
+bash
+Copy code
+curl http://<your-domain>/api/todos
+3. Update Todo
+Update an existing todo item.
+
+Endpoint: /todos/{todo_id}
+Method: PUT
+
+Path Parameter:
+
+todo_id (integer): The ID of the todo item to update.
+Request Body:
+
+json
+Copy code
+{
+    "task": "Updated Task"
+}
+Response:
+
+json
+Copy code
+{
+    "status": "success",
+    "task": "Updated Task"
+}
+Example:
+
+bash
+Copy code
+curl -X PUT http://<your-domain>/api/todos/1 -H "Content-Type: application/json" -d '{"task": "Updated Task"}'
+4. Delete Todo
+Delete a todo item.
+
+Endpoint: /todos/{todo_id}
+Method: DELETE
+
+Path Parameter:
+
+todo_id (integer): The ID of the todo item to delete.
+Response:
+
+json
+Copy code
+{
+    "status": "success"
+}
+Example:
+
+bash
+Copy code
+curl -X DELETE http://<your-domain>/api/todos/1
+5. Add Stub Data
+Add or update stub data for an API endpoint.
+
+Endpoint: /stub-data
+Method: POST
+
+Request Body:
+
+json
+Copy code
+{
+    "endpoint": "/api/user",
+    "method": "GET",
+    "response": {
+        "id": 1,
+        "name": "John Doe"
+    },
+    "status_code": 200
+}
+Response:
+
+json
+Copy code
+{
+    "status": "success",
+    "message": "Stub data stored successfully"
+}
+Example:
+
+bash
+Copy code
+curl -X POST http://<your-domain>/api/stub-data -H "Content-Type: application/json" -d '{
+    "endpoint": "/api/user",
+    "method": "GET",
+    "response": {"id": 1, "name": "John Doe"},
+    "status_code": 200
+}'
+6. Get Stub Data
+Retrieve all stored stub data.
+
+Endpoint: /stub-data
+Method: GET
+
+Response:
+
+json
+Copy code
+[
+    {
+        "endpoint": "/api/user",
+        "method": "GET",
+        "response": {
+            "id": 1,
+            "name": "John Doe"
+        },
+        "status_code": 200
+    }
+]
+Example:
+
+bash
+Copy code
+curl http://<your-domain>/api/stub-data
+7. Delete Stub Data
+Delete stub data for a specific endpoint and method.
+
+Endpoint: /stub-data
+Method: DELETE
+
+Request Body:
+
+json
+Copy code
+{
+    "endpoint": "/api/user",
+    "method": "GET"
+}
+Response:
+
+json
+Copy code
+{
+    "status": "success",
+    "message": "Stub data deleted successfully"
+}
+Example:
+
+bash
+Copy code
+curl -X DELETE http://<your-domain>/api/stub-data -H "Content-Type: application/json" -d '{
+    "endpoint": "/api/user",
+    "method": "GET"
+}'
+Error Handling
+All endpoints may return the following error responses:
+
+Error Responses
+400 Bad Request
+
+Description: The request was invalid or cannot be otherwise served.
+Response:
+json
+Copy code
+{
+    "status": "error",
+    "message": "Bad Request"
+}
+404 Not Found
+
+Description: The requested resource could not be found.
+Response:
+json
+Copy code
+{
+    "status": "error",
+    "message": "Not Found"
+}
+500 Internal Server Error
+
+Description: An error occurred on the server.
+Response:
+json
+Copy code
+{
+    "status": "error",
+    "message": "Internal Server Error"
+}
+Conclusion
+This API documentation provides detailed information about the endpoints available in the Stub Generator application, including their request and response formats, examples, and error handling. Use this documentation to integrate with the Stub Generator API and ensure smooth operation of your application even when external services are down.
+
+This example covers the essential aspects of API documentation, ensuring that users understand how to interact with your API effectively.
