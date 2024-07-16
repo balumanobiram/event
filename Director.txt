@@ -1,0 +1,34 @@
+stub-generator-application/
+│
+├── backend/
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── api_routes.py
+│   │   └── stub_routes.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── stub_model.py
+│   └── utils/
+│       ├── __init__.py
+│       └── interceptor.py
+│
+├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── App.js
+│   │   │   ├── Form.js
+│   │   │   └── StubList.js
+│   │   ├── services/
+│   │   │   └── apiService.js
+│   │   ├── App.js
+│   │   ├── index.js
+│   │   └── styles/
+│   │       └── app.css
+│   ├── package.json
+│   └── webpack.config.js
+│
+└── README.md
