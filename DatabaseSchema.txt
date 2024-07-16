@@ -1,0 +1,102 @@
+Database Schema Documentation for Stub Generator Application
+Overview
+This document provides an in-depth explanation of the database schema used in the Stub Generator application. The schema consists of two primary tables: todos and stub_data. These tables are designed to store todo items and stub data for API endpoints, respectively.
+
+Tables
+1. todos Table
+The todos table is used to store todo items. Each row in the table represents a single todo item.
+
+Schema:
+
+Column	Type	Constraints	Description
+id	SERIAL	PRIMARY KEY	Unique identifier for each todo item.
+task	VARCHAR(255)	NOT NULL	Description of the todo task.
+completed	BOOLEAN	DEFAULT FALSE	Status indicating whether the task is completed.
+created_at	TIMESTAMP	DEFAULT CURRENT_TIMESTAMP	Timestamp of when the task was created.
+SQL Statement:
+
+sql
+Copy code
+CREATE TABLE todos (
+    id SERIAL PRIMARY KEY,
+    task VARCHAR(255) NOT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+Explanation:
+
+id: This is the primary key for the table. It is an auto-incrementing integer.
+task: This column stores the description of the todo item. It is a non-nullable string with a maximum length of 255 characters.
+completed: This boolean column indicates whether the todo item has been completed. The default value is false.
+created_at: This timestamp column records when the todo item was created. The default value is the current timestamp.
+2. stub_data Table
+The stub_data table is used to store stub data for API endpoints. Each row represents the stub data for a specific endpoint and HTTP method.
+
+Schema:
+
+Column	Type	Constraints	Description
+id	SERIAL	PRIMARY KEY	Unique identifier for each stub data entry.
+endpoint	VARCHAR(255)	NOT NULL	The API endpoint associated with the stub data.
+method	VARCHAR(10)	NOT NULL	The HTTP method (e.g., GET, POST) for the endpoint.
+response	JSONB	NOT NULL	The JSON response to be returned when the endpoint is called.
+status_code	INTEGER	NOT NULL	The HTTP status code for the response.
+created_at	TIMESTAMP	DEFAULT CURRENT_TIMESTAMP	Timestamp of when the stub data was created.
+SQL Statement:
+
+sql
+Copy code
+CREATE TABLE stub_data (
+    id SERIAL PRIMARY KEY,
+    endpoint VARCHAR(255) NOT NULL,
+    method VARCHAR(10) NOT NULL,
+    response JSONB NOT NULL,
+    status_code INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+Explanation:
+
+id: This is the primary key for the table. It is an auto-incrementing integer.
+endpoint: This column stores the API endpoint associated with the stub data. It is a non-nullable string with a maximum length of 255 characters.
+method: This column stores the HTTP method (e.g., GET, POST) for the endpoint. It is a non-nullable string with a maximum length of 10 characters.
+response: This column stores the JSON response to be returned when the endpoint is called. It is a non-nullable JSONB column.
+status_code: This column stores the HTTP status code for the response. It is a non-nullable integer.
+created_at: This timestamp column records when the stub data was created. The default value is the current timestamp.
+Entity-Relationship Diagram (ERD)
+The following diagram visually represents the relationships between the tables in the database schema.
+
+plantuml
+Copy code
+@startuml
+entity "todos" {
+    * id : SERIAL
+    * task : VARCHAR(255)
+    * completed : BOOLEAN
+    * created_at : TIMESTAMP
+}
+
+entity "stub_data" {
+    * id : SERIAL
+    * endpoint : VARCHAR(255)
+    * method : VARCHAR(10)
+    * response : JSONB
+    * status_code : INTEGER
+    * created_at : TIMESTAMP
+}
+@enduml
+Indexes
+To improve the performance of queries, indexes can be created on frequently queried columns.
+
+Index on todos Table
+SQL Statement:
+
+sql
+Copy code
+CREATE INDEX idx_todos_completed ON todos (completed);
+Index on stub_data Table
+SQL Statement:
+
+sql
+Copy code
+CREATE INDEX idx_stub_data_endpoint_method ON stub_data (endpoint, method);
+Conclusion
+This document provides a comprehensive overview of the database schema for the Stub Generator application. It includes the schema for each table, explanations of each column, SQL statements to create the tables, and an ERD to visually represent the relationships. This documentation should help developers understand and work with the database schema effectively.
