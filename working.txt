@@ -1,85 +1,227 @@
-Sure, let's delve into the detailed working of the interceptor concept and the stub generator application, focusing on the flow and interactions between components without getting into specific code.
+Here’s a Spring Boot Reactive Web Server using Spring WebFlux and WebClient to handle messages reactively.
 
-Interceptor Concept
-Purpose
-The interceptor acts as a middleware component to handle API calls between a client application and an external service. It captures API requests, processes them (for example, by logging or authenticating), forwards them to the target service, and handles the responses.
+1. Set Up Spring Boot WebFlux Project
 
-Detailed Workflow of the Stub Generator Application
-1. Application Makes API Call
-The client application initiates an API request. This could be for any data or service provided by an external service. Instead of calling the external service directly, the application routes the request through the interceptor.
+If you haven’t created a Spring Boot project yet, go to Spring Initializr and select:
+	•	Dependencies: Spring WebFlux, Lombok
 
-Example Scenario: A web application needs to fetch user data from an external user service.
-2. Interceptor Receives API Call
-The interceptor captures the API request. It acts as an intermediary that all API requests pass through.
+Or use this Maven command:
 
-Initial Steps:
-Validate the request (optional: check for authentication tokens, request format, etc.).
-Log the request details (optional: for debugging or auditing purposes).
-3. Forwarding to External Service
-After initial processing, the interceptor forwards the API request to the intended external service.
+mvn archetype:generate -DgroupId=com.example -DartifactId=reactive-server -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
 
-Example: The interceptor forwards the request to the user service to get the user data.
-4. External Service Processes the Request
-The external service receives the request, processes it, and sends back the appropriate response.
+2. Add Dependencies in pom.xml
 
-Example: The user service processes the request and returns user details.
-5. Interceptor Receives the Response
-The interceptor receives the response from the external service. At this point, it can perform additional tasks before sending the response back to the application.
+Modify your pom.xml to include WebFlux and Lombok:
 
-Tasks at this Stage:
-Log the response details.
-Store the response in the stub server for future use (caching the response).
-6. Storing the Response in the Stub Server
-The interceptor stores the response in the stub server. The stub server acts as a cache that holds previously fetched responses. This step ensures that if the external service becomes unavailable, the application can still get a response.
+<dependencies>
+    <!-- Spring WebFlux -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
 
-Example: The user details are stored in the stub server.
-7. Returning the Response to the Application
-The interceptor sends the processed response back to the client application.
+    <!-- Lombok (for cleaner code) -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <scope>provided</scope>
+    </dependency>
 
-Example: The application receives the user details and displays them to the user.
-Workflow When External Service is Down
-1. Application Makes API Call
-The client application makes an API request, which is routed through the interceptor as usual.
+    <!-- Reactor Test (Optional) -->
+    <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
 
-2. Interceptor Attempts to Forward API Call
-The interceptor tries to forward the request to the external service. However, if the external service is down or unavailable, the call fails.
+3. Create MessageController.java
 
-Failure Detection: The interceptor identifies the failure (e.g., due to a timeout or an error response).
-3. Interceptor Requests Stub Data
-Recognizing that the external service is down, the interceptor requests the stub data from the stub server instead of the external service.
+This is the reactive REST controller that handles incoming messages:
 
-Stub Data Request: The interceptor queries the stub server for the cached response corresponding to the failed API request.
-4. Stub Server Provides Stub Data
-The stub server retrieves the stored response data (stub data) and returns it to the interceptor.
+package com.example.reactive.controller;
 
-Example: The stub server returns the previously cached user details.
-5. Interceptor Returns Stub Data to Application
-The interceptor sends the stub data back to the client application as the response.
+import lombok.Data;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
-Fallback Mechanism: The application receives the stubbed response and continues to function as if the external service had responded normally.
-Summary
-Normal Operation: The interceptor processes and forwards API requests to external services, stores responses in the stub server, and returns the responses to the client application.
-Fallback Operation: When the external service is unavailable, the interceptor retrieves and returns the cached stub data from the stub server, ensuring the application remains functional.
-System Requirements
-Backend:
-Flask: For building the interceptor and stub server.
-Flask-CORS: To handle Cross-Origin Resource Sharing issues.
-Frontend:
-ReactJS: For the client application making API calls.
-Database: (For storing stub data)
-An in-memory store or a simple file-based system can be used for the stub server in this example.
-User Guide
-Setup the Environment:
+@RestController
+@RequestMapping("/api")
+public class MessageController {
 
-Install Flask and Flask-CORS.
-Set up React for the frontend.
-Run the Application:
+    @PostMapping(value = "/message", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<MessageResponse> receiveMessage(@RequestBody Mono<MessageRequest> requestMono) {
+        return requestMono.map(request -> new MessageResponse("Received: " + request.getMessage(), "Success"));
+    }
+}
 
-Start the Flask server (interceptor and stub server).
-Launch the React frontend application.
-Testing the Workflow:
+// DTO for Incoming Request
+@Data
+class MessageRequest {
+    private String message;
+}
 
-Make API calls through the React application.
-Monitor how the interceptor processes requests and forwards them to the external service.
-Simulate the external service being down and observe how the interceptor retrieves stub data from the stub server.
-This explanation provides a comprehensive understanding of how the interceptor pattern works within your stub generator application, focusing on the flow of data and interactions between different components.
+// DTO for Response
+@Data
+class MessageResponse {
+    private final String received;
+    private final String status;
+}
+
+4. Create a Reactive WebClient in WebClientService.java
+
+This is a Reactive WebClient that will send messages to another API.
+
+package com.example.reactive.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+@Service
+public class WebClientService {
+
+    private final WebClient webClient;
+
+    public WebClientService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("http://localhost:5000/api").build();
+    }
+
+    public Mono<String> sendMessage(String message) {
+        return webClient.post()
+                .uri("/message")
+                .bodyValue(new MessageRequest(message))
+                .retrieve()
+                .bodyToMono(MessageResponse.class)
+                .map(MessageResponse::getReceived);
+    }
+}
+
+// DTO Classes
+class MessageRequest {
+    private String message;
+
+    public MessageRequest(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+}
+
+class MessageResponse {
+    private String received;
+
+    public String getReceived() {
+        return received;
+    }
+}
+
+5. Enable CORS in CorsConfig.java
+
+If you are using a React frontend, you may need to enable CORS:
+
+package com.example.reactive.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.config.CorsRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
+
+@Configuration
+public class CorsConfig {
+
+    @Bean
+    public WebFluxConfigurer corsConfigurer() {
+        return new WebFluxConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/api/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("GET", "POST");
+            }
+        };
+    }
+}
+
+6. Run the Spring Boot App
+
+Run the application using:
+
+mvn spring-boot:run
+
+or
+
+./mvnw spring-boot:run
+
+7. Test the API with Curl
+
+curl -X POST http://localhost:8080/api/message -H "Content-Type: application/json" -d '{"message":"Hello from client!"}'
+
+Expected Output:
+
+{"received":"Received: Hello from client!","status":"Success"}
+
+8. Connecting to React WebClient
+
+Modify your React form (TextForm.tsx) to send requests using Axios:
+
+import { useState } from "react";
+import axios from "axios";
+
+const TextForm: React.FC = () => {
+  const [text, setText] = useState<string>("");
+
+  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setText(event.target.value);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.post("http://localhost:8080/api/message", {
+        message: text,
+      });
+
+      alert("Server Response: " + response.data.received);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to send message.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Enter text:
+        <textarea value={text} onChange={handleChange} rows={4} cols={50} />
+      </label>
+      <br />
+      <button type="submit">Send</button>
+    </form>
+  );
+};
+
+export default TextForm;
+
+How It Works
+	1.	Spring Boot (WebFlux) Server
+	•	Exposes a reactive API /api/message that accepts messages.
+	•	Uses Mono to process data asynchronously.
+	•	Sends a JSON response {"received":"Hello","status":"Success"}.
+	2.	Reactive WebClient
+	•	Can send data to another API.
+	•	Uses retrieve().bodyToMono(MessageResponse.class) for non-blocking processing.
+	3.	React Client
+	•	Uses axios.post() to send user input.
+	•	Displays the received message as an alert.
+
+Next Steps
+	•	WebSockets: If you need real-time updates, use Spring WebFlux + WebSockets.
+	•	Database: Store messages in MongoDB for persistence (spring-boot-starter-data-mongodb).
+	•	Docker: Deploy with Docker Compose.
+
+Would you like help with any of these?
