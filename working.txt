@@ -1,227 +1,23 @@
-Here’s a Spring Boot Reactive Web Server using Spring WebFlux and WebClient to handle messages reactively.
-
-1. Set Up Spring Boot WebFlux Project
-
-If you haven’t created a Spring Boot project yet, go to Spring Initializr and select:
-	•	Dependencies: Spring WebFlux, Lombok
-
-Or use this Maven command:
-
-mvn archetype:generate -DgroupId=com.example -DartifactId=reactive-server -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
-
-2. Add Dependencies in pom.xml
-
-Modify your pom.xml to include WebFlux and Lombok:
-
-<dependencies>
-    <!-- Spring WebFlux -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
-
-    <!-- Lombok (for cleaner code) -->
-    <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <scope>provided</scope>
-    </dependency>
-
-    <!-- Reactor Test (Optional) -->
-    <dependency>
-        <groupId>io.projectreactor</groupId>
-        <artifactId>reactor-test</artifactId>
-        <scope>test</scope>
-    </dependency>
-</dependencies>
-
-3. Create MessageController.java
-
-This is the reactive REST controller that handles incoming messages:
-
-package com.example.reactive.controller;
-
-import lombok.Data;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
-
-@RestController
-@RequestMapping("/api")
-public class MessageController {
-
-    @PostMapping(value = "/message", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<MessageResponse> receiveMessage(@RequestBody Mono<MessageRequest> requestMono) {
-        return requestMono.map(request -> new MessageResponse("Received: " + request.getMessage(), "Success"));
-    }
-}
-
-// DTO for Incoming Request
-@Data
-class MessageRequest {
-    private String message;
-}
-
-// DTO for Response
-@Data
-class MessageResponse {
-    private final String received;
-    private final String status;
-}
-
-4. Create a Reactive WebClient in WebClientService.java
-
-This is a Reactive WebClient that will send messages to another API.
-
-package com.example.reactive.service;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-
-@Service
-public class WebClientService {
-
-    private final WebClient webClient;
-
-    public WebClientService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:5000/api").build();
-    }
-
-    public Mono<String> sendMessage(String message) {
-        return webClient.post()
-                .uri("/message")
-                .bodyValue(new MessageRequest(message))
-                .retrieve()
-                .bodyToMono(MessageResponse.class)
-                .map(MessageResponse::getReceived);
-    }
-}
-
-// DTO Classes
-class MessageRequest {
-    private String message;
-
-    public MessageRequest(String message) {
-        this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-}
-
-class MessageResponse {
-    private String received;
-
-    public String getReceived() {
-        return received;
-    }
-}
-
-5. Enable CORS in CorsConfig.java
-
-If you are using a React frontend, you may need to enable CORS:
-
-package com.example.reactive.config;
+package com.yourpackage.config; // Change to your actual package name
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.reactive.config.CorsRegistry;
-import org.springframework.web.reactive.config.WebFluxConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class CorsConfig {
-
     @Bean
-    public WebFluxConfigurer corsConfigurer() {
-        return new WebFluxConfigurer() {
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
-                        .allowedOrigins("*")
-                        .allowedMethods("GET", "POST");
+                registry.addMapping("/**") // Apply to all endpoints
+                        .allowedOrigins("https://your-frontend.com") // Allow frontend domain
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allowed methods
+                        .allowedHeaders("*") // Allow all headers
+                        .allowCredentials(true); // Allow credentials if needed
             }
         };
     }
 }
-
-6. Run the Spring Boot App
-
-Run the application using:
-
-mvn spring-boot:run
-
-or
-
-./mvnw spring-boot:run
-
-7. Test the API with Curl
-
-curl -X POST http://localhost:8080/api/message -H "Content-Type: application/json" -d '{"message":"Hello from client!"}'
-
-Expected Output:
-
-{"received":"Received: Hello from client!","status":"Success"}
-
-8. Connecting to React WebClient
-
-Modify your React form (TextForm.tsx) to send requests using Axios:
-
-import { useState } from "react";
-import axios from "axios";
-
-const TextForm: React.FC = () => {
-  const [text, setText] = useState<string>("");
-
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(event.target.value);
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    try {
-      const response = await axios.post("http://localhost:8080/api/message", {
-        message: text,
-      });
-
-      alert("Server Response: " + response.data.received);
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to send message.");
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Enter text:
-        <textarea value={text} onChange={handleChange} rows={4} cols={50} />
-      </label>
-      <br />
-      <button type="submit">Send</button>
-    </form>
-  );
-};
-
-export default TextForm;
-
-How It Works
-	1.	Spring Boot (WebFlux) Server
-	•	Exposes a reactive API /api/message that accepts messages.
-	•	Uses Mono to process data asynchronously.
-	•	Sends a JSON response {"received":"Hello","status":"Success"}.
-	2.	Reactive WebClient
-	•	Can send data to another API.
-	•	Uses retrieve().bodyToMono(MessageResponse.class) for non-blocking processing.
-	3.	React Client
-	•	Uses axios.post() to send user input.
-	•	Displays the received message as an alert.
-
-Next Steps
-	•	WebSockets: If you need real-time updates, use Spring WebFlux + WebSockets.
-	•	Database: Store messages in MongoDB for persistence (spring-boot-starter-data-mongodb).
-	•	Docker: Deploy with Docker Compose.
-
-Would you like help with any of these?
